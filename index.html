@@ -742,35 +742,39 @@ const GOOGLE_AVIS = {
   apiKey: 'AIzaSyDaJBZ-Uk8xzduN9EJTB5Y1P-NU4af4aaE',   // ← clé API Google (Places)
   placeId: 'ChIJj5eTHWuD2RIRWrWwyuyVhy8'   // ← Place ID de la fiche Google d'Olivier
 };
-if (GOOGLE_AVIS.apiKey && GOOGLE_AVIS.placeId) {
+
+  if (GOOGLE_AVIS.apiKey && GOOGLE_AVIS.placeId) {
   const s = document.createElement('script');
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_AVIS.apiKey}&libraries=places&language=fr`;
-  s.onload = () => {
-    const svc = new google.maps.places.PlacesService(document.createElement('div'));
-    svc.getDetails({placeId: GOOGLE_AVIS.placeId, fields:['reviews','rating','user_ratings_total','url']}, (place, status) => {
-      if (status !== google.maps.places.PlacesServiceStatus.OK || !place) return;
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_AVIS.apiKey}&v=weekly&loading=async&language=fr&callback=initAvis`;
+  s.async = true;
+  window.initAvis = async () => {
+    try {
+      const { Place } = await google.maps.importLibrary('places');
+      const place = new Place({ id: GOOGLE_AVIS.placeId, requestedLanguage: 'fr' });
+      await place.fetchFields({ fields: ['reviews', 'rating', 'userRatingCount', 'googleMapsURI'] });
       if (place.reviews?.length) {
         const list = document.getElementById('avisList');
         list.innerHTML = '';
         place.reviews.slice(0, 6).forEach((r, i) => {
+          const note = Math.round(r.rating || 5);
           const el = document.createElement('article');
           el.className = 'avis-card reveal visible' + (i % 3 === 1 ? ' d1' : i % 3 === 2 ? ' d2' : '');
           el.innerHTML = `
-            <div class="stars" aria-label="${r.rating} étoiles sur 5">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+            <div class="stars" aria-label="${note} étoiles sur 5">${'★'.repeat(note)}${'☆'.repeat(5 - note)}</div>
             <blockquote></blockquote>
             <div class="who"><b></b><span class="badge-google">Avis Google</span></div>`;
-          el.querySelector('blockquote').textContent = `« ${r.text} »`;
-          el.querySelector('.who b').textContent = r.author_name;
+          el.querySelector('blockquote').textContent = `« ${(r.text && r.text.text) || r.text || ''} »`;
+          el.querySelector('.who b').textContent = (r.authorAttribution && r.authorAttribution.displayName) || 'Client Google';
           list.appendChild(el);
         });
       }
       if (place.rating) {
         document.getElementById('avisNote').textContent = place.rating.toFixed(1) + ' / 5';
-        document.getElementById('avisTotal').textContent = `Note Google — ${place.user_ratings_total || 0} avis`;
+        document.getElementById('avisTotal').textContent = `Note Google — ${place.userRatingCount || 0} avis`;
         document.getElementById('avisSummary').hidden = false;
       }
-      if (place.url) document.getElementById('avisLink').href = place.url;
-    });
+      if (place.googleMapsURI) document.getElementById('avisLink').href = place.googleMapsURI;
+    } catch (e) { console.warn('Avis Google :', e); }
   };
   document.head.appendChild(s);
 }
