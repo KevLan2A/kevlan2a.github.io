@@ -30,6 +30,6 @@ jobs:
         run: |
           git config user.name "journal-bot"
           git config user.email "bot@olivierlouette.com"
-          git add posts.json
+          git add posts.json realisations.html
           git diff --cached --quiet || git commit -m "Journal : nouveaux articles ($(date +%d/%m/%Y))"
           git push
