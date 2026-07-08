@@ -1,0 +1,35 @@
+# Automatisation quotidienne du journal de l'atelier
+# Chaque jour à 7h : récupère les nouveaux posts Instagram/Facebook,
+# les réécrit via Claude, met à jour posts.json et publie le site.
+name: Journal automatique
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # tous les jours à 7h (heure de Paris, été)
+  workflow_dispatch:        # bouton "Run workflow" pour lancer à la main
+
+permissions:
+  contents: write
+
+jobs:
+  journal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Générer les articles
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+        run: node automation/generate-posts.mjs
+      - name: Publier les nouveaux articles
+        run: |
+          git config user.name "journal-bot"
+          git config user.email "bot@olivierlouette.com"
+          git add posts.json
+          git diff --cached --quiet || git commit -m "Journal : nouveaux articles ($(date +%d/%m/%Y))"
+          git push
