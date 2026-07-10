@@ -277,7 +277,8 @@ footer .links{display:flex;gap:24px;flex-wrap:wrap;font-size:.92rem;color:#cbb99
     // L'atelier : position réelle (Quarcetta, Prunelli-di-Fiumorbo — fiche Google)
     const [x,y] = proj(41.99063, 9.40646);
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.innerHTML = ` <text x="${x-26}" y="${y+14}" text-anchor="end">L'atelier</text>`;
+    g.innerHTML = `<text class="home" x="${x-8}" y="${y+14}" text-anchor="end">🪵</text>
+            <text x="${x-26}" y="${y+14}" text-anchor="end">L'atelier</text>`;
     gM.appendChild(g);
   }
 
