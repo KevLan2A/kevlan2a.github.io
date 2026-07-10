@@ -279,5 +279,7 @@ fetch('posts.json', {cache:'no-store'})
   .then(data => { allPosts = data.posts || data; render(); })
   .catch(() => { allPosts = DEMO_POSTS; render(); });
 </script>
+<script data-goatcounter="https://olivierlouette.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
