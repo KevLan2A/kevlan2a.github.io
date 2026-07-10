@@ -665,7 +665,8 @@ footer{
       <span>Je souhaite recevoir <b>la lettre de l'atelier</b> — une fois par mois, le récap des chantiers et le mot d'Olivier.</span>
       </label>
       <button type="submit" class="btn btn-primary">Envoyer ma demande de devis</button>
-      <div class="form-success" id="formSuccess">✓ Votre messagerie vient de s'ouvrir avec votre demande. Vérifiez le contenu puis cliquez sur « Envoyer ».</div>
+      <div class="form-success" id="formSuccess">✓ Votre messagerie vient de s'ouvrir avec votre demande. Vérifiez le contenu puis cliquez sur « Envoyer ». Un email de confirmation vient de
+   vous être adressé."</div>
     </form>
   </div>
 </section>
@@ -785,7 +786,8 @@ const GOOGLE_AVIS = {
 /* ===== Formulaire devis → email pré-rempli ===== */
 const EMAIL_DESTINATAIRE = 'contact@olivierlouette.com';
 const BREVO_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFAEGfRu1GsRmeljq_DwbKncY95QGDXB6JUjmLILPvy07O4lpgU2Btg5fdKy8dtxQ4eKjNEsgnDnk3kMFfZgVv3V3D204fdusEZAQNtMR5opkGGrtQK95InTh1x5RtD9qnQFhhxvYIgqYZwU89fAIdCHM1oQO7vEs-v6xUFK3bJE4jo63CUihZZxEtB0OFM36Ok8E3tNd8RCDXpw==';
-document.getElementById('devisForm').addEventListener('submit', e => {
+BREVO_DEVIS_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFALcwkwLYZifr8gYf6r01y1dDzqzydT2giH9TZJMq1hr_zZwS1jhq_3z3g5Xf0nJNWXgmJxz8Qpc2sHQrQVoxUfYmHoNmly9MZ6hQvEs9_X5ETT1RyGoO9-uEK5tt6k070D5eL3PkZDhWmUVevWaBuD4fqto-_s1sy7-FwZmonUnC8hEEqLrAkYtdnSwyrYmdPxHl6EBw-MWAyQ=='
+  document.getElementById('devisForm').addEventListener('submit', e => {
   e.preventDefault();
   const f = e.target;
   if (!f.checkValidity()) { f.reportValidity(); return; }
@@ -815,7 +817,14 @@ ${d.nom}`);
     fd.append('EMAIL', d.email);
     fetch(BREVO_FORM_URL, { method: 'POST', mode: 'no-cors', body: fd }).catch(() => {});
   }
-  
+    
+   if (BREVO_DEVIS_FORM_URL && !BREVO_DEVIS_FORM_URL.includes('COLLER')) {
+    const ar = new FormData();
+    ar.append('EMAIL', d.email);
+    ar.append('PRENOM', (d.nom || '').split(' ')[0]);
+    fetch(BREVO_DEVIS_FORM_URL, { method: 'POST', mode: 'no-cors', body: ar }).catch(() => {});
+  }
+    
   location.href = `mailto:${EMAIL_DESTINATAIRE}?subject=${sujet}&body=${corps}`;
   document.getElementById('formSuccess').classList.add('show');
 });
