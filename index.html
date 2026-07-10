@@ -660,6 +660,10 @@ footer{
       <label>Décrivez votre projet
         <textarea name="message" placeholder="Dimensions approximatives, essence de bois souhaitée, délais…" required></textarea>
       </label>
+      <label style="display:flex;align-items:flex-start;gap:12px;font-size:.9rem;cursor:pointer">
+      <input type="checkbox" name="newsletter" value="oui" style="width:auto;margin-top:3px;accent-color:#8a5f2e">
+      <span>Je souhaite recevoir <b>la lettre de l'atelier</b> — une fois par mois, le récap des chantiers et le mot d'Olivier. Désinscription en un clic, jamais de publicité.</span>
+      </label>
       <button type="submit" class="btn btn-primary">Envoyer ma demande de devis</button>
       <p class="form-note">En cliquant, votre messagerie s'ouvre avec un email pré-rempli — il ne reste qu'à l'envoyer.</p>
       <div class="form-success" id="formSuccess">✓ Votre messagerie vient de s'ouvrir avec votre demande. Vérifiez le contenu puis cliquez sur « Envoyer ».</div>
@@ -780,7 +784,8 @@ const GOOGLE_AVIS = {
 }
 
 /* ===== Formulaire devis → email pré-rempli ===== */
-const EMAIL_DESTINATAIRE = 'olivierlouette@hotmail.com'; // ← à vérifier / remplacer par la vraie adresse
+const EMAIL_DESTINATAIRE = 'contact@olivierlouette.com';
+const BREVO_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFAEGfRu1GsRmeljq_DwbKncY95QGDXB6JUjmLILPvy07O4lpgU2Btg5fdKy8dtxQ4eKjNEsgnDnk3kMFfZgVv3V3D204fdusEZAQNtMR5opkGGrtQK95InTh1x5RtD9qnQFhhxvYIgqYZwU89fAIdCHM1oQO7vEs-v6xUFK3bJE4jo63CUihZZxEtB0OFM36Ok8E3tNd8RCDXpw==';
 document.getElementById('devisForm').addEventListener('submit', e => {
   e.preventDefault();
   const f = e.target;
@@ -798,12 +803,20 @@ Je souhaite obtenir un devis pour le projet suivant :
 — Commune du chantier : ${d.commune || 'Non précisée'}
 — Type de projet : ${d.type}
 — Budget estimé : ${d.budget || 'Non précisé'}
+— Newsletter mensuelle : ${d.newsletter ? 'OUI' : 'non'}
 
 Description du projet :
 ${d.message}
 
 Cordialement,
 ${d.nom}`);
+  
+  if (d.newsletter && BREVO_FORM_URL) {
+    const fd = new FormData();
+    fd.append('EMAIL', d.email);
+    fetch(BREVO_FORM_URL, { method: 'POST', mode: 'no-cors', body: fd }).catch(() => {});
+  }
+  
   location.href = `mailto:${EMAIL_DESTINATAIRE}?subject=${sujet}&body=${corps}`;
   document.getElementById('formSuccess').classList.add('show');
 });
