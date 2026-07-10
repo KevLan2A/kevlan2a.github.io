@@ -1,0 +1,34 @@
+# Newsletter mensuelle : le 1er de chaque mois à 9h,
+# récap des chantiers du mois + le mot d'Olivier, envoyé via Brevo.
+name: Newsletter mensuelle
+
+on:
+  schedule:
+    - cron: "0 7 1 * *"    # le 1er du mois à 9h (heure de Paris, été)
+  workflow_dispatch:         # bouton pour envoyer manuellement
+
+permissions:
+  contents: write
+
+jobs:
+  newsletter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Générer et envoyer la newsletter
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          BREVO_LIST_ID: ${{ secrets.BREVO_LIST_ID }}
+          BREVO_SENDER_EMAIL: ${{ secrets.BREVO_SENDER_EMAIL }}
+        run: node automation/generate-newsletter.mjs
+      - name: Archiver et réinitialiser
+        run: |
+          git config user.name "newsletter-bot"
+          git config user.email "contact@olivierlouette.com"
+          git add newsletter/
+          git diff --cached --quiet || git commit -m "Newsletter $(date +%m/%Y) envoyée"
+          git push
