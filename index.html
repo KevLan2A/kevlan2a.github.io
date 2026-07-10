@@ -238,6 +238,16 @@ section{padding:clamp(72px,11vw,140px) clamp(18px,6vw,72px)}
 .teaser-tiles .tile{height:190px;border-radius:var(--radius);box-shadow:0 14px 34px rgba(0,0,0,.35);transition:transform .5s var(--ease)}
 .teaser-tiles .tile:hover{transform:translateY(-6px) rotate(-.5deg)}
 @media (max-width:700px){.teaser-tiles{grid-template-columns:1fr 1fr}.teaser-tiles .tile:last-child{display:none}}
+```css
+.teaser-tiles a.tile{display:block;position:relative;overflow:hidden;text-decoration:none}
+.teaser-tiles .tile img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;transition:transform .6s cubic-bezier(.22,.8,.24,1)}
+.teaser-tiles a.tile:hover img{transform:scale(1.06)}
+.teaser-tiles .tile .titre{
+  position:absolute;inset:auto 0 0 0;padding:26px 14px 12px;
+  background:linear-gradient(transparent,rgba(20,14,9,.78));
+  color:#f7f1e5;font-size:.85rem;font-weight:600;line-height:1.3;
+}
+```
 .btn-teaser{background:var(--caramel);color:#241a11;box-shadow:0 8px 22px rgba(0,0,0,.3)}
 .btn-teaser:hover{background:var(--pine);transform:translateY(-3px)}
 
