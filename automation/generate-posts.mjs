@@ -98,8 +98,10 @@ ${post.caption.slice(0, 1500)}
 
 Transforme-la en court article de journal d'atelier, en français, ton chaleureux et artisanal, sans hashtags ni emojis, sans inventer de détails absents de la légende.
 
+Si la légende mentionne une commune ou un lieu de Corse où se situe le chantier, indique la commune (orthographe officielle, ex : "Ghisonaccia", "Porto-Vecchio", "Prunelli-di-Fiumorbo"). Sinon mets null. N'invente jamais de lieu.
+
 Réponds UNIQUEMENT avec un objet JSON valide, sans backticks ni texte autour :
-{"title": "titre accrocheur de 4 à 9 mots", "excerpt": "article de 2 à 4 phrases"}`
+{"title": "titre accrocheur de 4 à 9 mots", "excerpt": "article de 2 à 4 phrases", "commune": "nom de la commune ou null"}`
       }]
     })
   });
@@ -158,8 +160,8 @@ async function main() {
 
   for (const post of fresh) {
     try {
-      const { title, excerpt } = await rewriteWithClaude(post);
-      existing.posts.push({ id: post.id, title, excerpt, date: post.date, source: post.source, image: post.image, url: post.url });
+      const { title, excerpt, commune } = await rewriteWithClaude(post);
+      existing.posts.push({ id: post.id, title, excerpt, date: post.date, source: post.source, image: post.image, url: post.url, commune: commune || null });
       console.log(`  ✅ ${title}`);
     } catch (e) {
       console.error(`  ⚠️  ${post.id} ignoré :`, e.message);
