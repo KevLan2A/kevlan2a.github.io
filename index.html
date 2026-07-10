@@ -841,5 +841,31 @@ ${d.nom}`);
 </script>
 <script data-goatcounter="https://olivierlouette.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+```html
+<script>
+/* Tuiles du teaser = photos des 3 derniers chantiers (posts.json).
+   Sans photo disponible : les textures bois restent en place. */
+fetch('posts.json', {cache:'no-store'})
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(data => {
+    const posts = (data.posts || data).filter(p => p.image).slice(0, 3);
+    if (!posts.length) return;
+    const tiles = document.querySelectorAll('.teaser-tiles .tile');
+    posts.forEach((p, i) => {
+      const old = tiles[i];
+      if (!old) return;
+      const a = document.createElement('a');
+      a.className = old.className;           // garde la texture en fond de secours
+      a.href = 'realisations.html';
+      a.setAttribute('aria-label', p.title);
+      a.innerHTML = `<img src="${p.image}" alt="" loading="lazy"
+                       onerror="this.remove()">
+                     <span class="titre">${p.title}</span>`;
+      old.replaceWith(a);
+    });
+  })
+  .catch(() => {});
+</script>
+```
 </body>
 </html>
