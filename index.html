@@ -628,6 +628,10 @@ footer{
       </div>
     </div>
     <form id="devisForm" class="reveal d1" novalidate>
+      ```html
+<input type="text" name="site_web" tabindex="-1" autocomplete="off"
+       style="position:absolute;left:-9999px;opacity:0" aria-hidden="true">
+      ```
       <div class="row">
         <label>Nom complet
           <input type="text" name="nom" placeholder="Jean Dupont" required>
@@ -797,46 +801,65 @@ const GOOGLE_AVIS = {
 const EMAIL_DESTINATAIRE = 'contact@olivierlouette.com';
 const BREVO_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFAEGfRu1GsRmeljq_DwbKncY95QGDXB6JUjmLILPvy07O4lpgU2Btg5fdKy8dtxQ4eKjNEsgnDnk3kMFfZgVv3V3D204fdusEZAQNtMR5opkGGrtQK95InTh1x5RtD9qnQFhhxvYIgqYZwU89fAIdCHM1oQO7vEs-v6xUFK3bJE4jo63CUihZZxEtB0OFM36Ok8E3tNd8RCDXpw==';
 BREVO_DEVIS_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFALcwkwLYZifr8gYf6r01y1dDzqzydT2giH9TZJMq1hr_zZwS1jhq_3z3g5Xf0nJNWXgmJxz8Qpc2sHQrQVoxUfYmHoNmly9MZ6hQvEs9_X5ETT1RyGoO9-uEK5tt6k070D5eL3PkZDhWmUVevWaBuD4fqto-_s1sy7-FwZmonUnC8hEEqLrAkYtdnSwyrYmdPxHl6EBw-MWAyQ=='
-  document.getElementById('devisForm').addEventListener('submit', e => {
+javascript
+const WEB3FORMS_KEY = 'COLLER_ICI_LA_CLE_WEB3FORMS';
+const chargementForm = Date.now();   // anti-bot : horodatage d'arrivée
+
+document.getElementById('devisForm').addEventListener('submit', async e => {
   e.preventDefault();
   const f = e.target;
   if (!f.checkValidity()) { f.reportValidity(); return; }
   const d = Object.fromEntries(new FormData(f).entries());
-  const sujet = encodeURIComponent(`Demande de devis — ${d.type} — ${d.nom}`);
-  const corps = encodeURIComponent(
-`Bonjour Olivier,
 
-Je souhaite obtenir un devis pour le projet suivant :
+  /* Anti-robots : honeypot rempli ou envoi < 3 s = on ignore en silence */
+  if (d.site_web || Date.now() - chargementForm < 3000) return;
 
-— Nom : ${d.nom}
-— Téléphone : ${d.tel}
-— Email : ${d.email}
-— Commune du chantier : ${d.commune || 'Non précisée'}
-— Type de projet : ${d.type}
-— Budget estimé : ${d.budget || 'Non précisé'}
-— Newsletter mensuelle : ${d.newsletter ? 'OUI' : 'non'}
+  const btn = f.querySelector('button[type="submit"]');
+  const txt = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Envoi en cours…';
 
-Description du projet :
-${d.message}
-
-Cordialement,
-${d.nom}`);
-  
+  /* Inscriptions Brevo (newsletter + accusé de réception) — inchangé */
   if (d.newsletter && BREVO_FORM_URL) {
-    const fd = new FormData();
-    fd.append('EMAIL', d.email);
-    fetch(BREVO_FORM_URL, { method: 'POST', mode: 'no-cors', body: fd }).catch(() => {});
+    const fd = new FormData(); fd.append('EMAIL', d.email);
+    fetch(BREVO_FORM_URL, {method:'POST', mode:'no-cors', body:fd}).catch(()=>{});
   }
-    
-   if (BREVO_DEVIS_FORM_URL && !BREVO_DEVIS_FORM_URL.includes('COLLER')) {
+  if (BREVO_DEVIS_FORM_URL) {
     const ar = new FormData();
-    ar.append('EMAIL', d.email);
-    ar.append('PRENOM', (d.nom || '').split(' ')[0]);
-    fetch(BREVO_DEVIS_FORM_URL, { method: 'POST', mode: 'no-cors', body: ar }).catch(() => {});
+    ar.append('EMAIL', d.email); ar.append('PRENOM', (d.nom||'').split(' ')[0]);
+    fetch(BREVO_DEVIS_FORM_URL, {method:'POST', mode:'no-cors', body:ar}).catch(()=>{});
   }
-    
-  location.href = `mailto:${EMAIL_DESTINATAIRE}?subject=${sujet}&body=${corps}`;
-  document.getElementById('formSuccess').classList.add('show');
+
+  /* Envoi direct de la demande à Olivier */
+  try {
+    const r = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        subject: `Devis — ${d.type} — ${d.nom}`,
+        from_name: 'Site olivierlouette.com',
+        replyto: d.email,
+        'Nom': d.nom,
+        'Téléphone': d.tel,
+        'Email': d.email,
+        'Commune du chantier': d.commune || 'Non précisée',
+        'Type de projet': d.type,
+        'Budget estimé': d.budget || 'Non précisé',
+        'Newsletter': d.newsletter ? 'OUI' : 'non',
+        'Description': d.message
+      })
+    });
+    const res = await r.json();
+    if (!res.success) throw new Error(res.message);
+    f.reset();
+    const ok = document.getElementById('formSuccess');
+    ok.textContent = '✓ Votre demande est envoyée ! Vous allez recevoir un email de confirmation, et Olivier vous répondra sous 48 h ouvrées.';
+    ok.classList.add('show');
+  } catch (err) {
+    alert("L'envoi a échoué — vous pouvez appeler directement le 06 01 90 14 90 ou écrire à contact@olivierlouette.com");
+  } finally {
+    btn.disabled = false; btn.textContent = txt;
+  }
 });
 </script>
 <script data-goatcounter="https://olivierlouette.goatcounter.com/count"
