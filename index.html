@@ -258,7 +258,6 @@ section{padding:clamp(72px,11vw,140px) clamp(18px,6vw,72px)}
 .teaser-tiles .tile{height:190px;border-radius:var(--radius);box-shadow:0 14px 34px rgba(0,0,0,.35);transition:transform .5s var(--ease)}
 .teaser-tiles .tile:hover{transform:translateY(-6px) rotate(-.5deg)}
 @media (max-width:700px){.teaser-tiles{grid-template-columns:1fr 1fr}.teaser-tiles .tile:last-child{display:none}}
-```css
 .teaser-tiles a.tile{display:block;position:relative;overflow:hidden;text-decoration:none}
 .teaser-tiles .tile img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;transition:transform .6s cubic-bezier(.22,.8,.24,1)}
 .teaser-tiles a.tile:hover img{transform:scale(1.06)}
@@ -267,7 +266,6 @@ section{padding:clamp(72px,11vw,140px) clamp(18px,6vw,72px)}
   background:linear-gradient(transparent,rgba(20,14,9,.78));
   color:#f7f1e5;font-size:.85rem;font-weight:600;line-height:1.3;
 }
-```
 .btn-teaser{background:var(--caramel);color:#241a11;box-shadow:0 8px 22px rgba(0,0,0,.3)}
 .btn-teaser:hover{background:var(--pine);transform:translateY(-3px)}
 
@@ -845,8 +843,7 @@ const GOOGLE_AVIS = {
       via Web3Forms (la clé ci-dessous est publique par conception)
 ===================================================================== */
 const BREVO_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFAEGfRu1GsRmeljq_DwbKncY95QGDXB6JUjmLILPvy07O4lpgU2Btg5fdKy8dtxQ4eKjNEsgnDnk3kMFfZgVv3V3D204fdusEZAQNtMR5opkGGrtQK95InTh1x5RtD9qnQFhhxvYIgqYZwU89fAIdCHM1oQO7vEs-v6xUFK3bJE4jo63CUihZZxEtB0OFM36Ok8E3tNd8RCDXpw==';
-BREVO_DEVIS_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFALcwkwLYZifr8gYf6r01y1dDzqzydT2giH9TZJMq1hr_zZwS1jhq_3z3g5Xf0nJNWXgmJxz8Qpc2sHQrQVoxUfYmHoNmly9MZ6hQvEs9_X5ETT1RyGoO9-uEK5tt6k070D5eL3PkZDhWmUVevWaBuD4fqto-_s1sy7-FwZmonUnC8hEEqLrAkYtdnSwyrYmdPxHl6EBw-MWAyQ=='
-javascript
+const BREVO_DEVIS_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFALcwkwLYZifr8gYf6r01y1dDzqzydT2giH9TZJMq1hr_zZwS1jhq_3z3g5Xf0nJNWXgmJxz8Qpc2sHQrQVoxUfYmHoNmly9MZ6hQvEs9_X5ETT1RyGoO9-uEK5tt6k070D5eL3PkZDhWmUVevWaBuD4fqto-_s1sy7-FwZmonUnC8hEEqLrAkYtdnSwyrYmdPxHl6EBw-MWAyQ==';
 const WEB3FORMS_KEY = 'd6facab8-5499-43bf-9b25-87f0fdd2027d';
 const chargementForm = Date.now();   // anti-bot : horodatage d'arrivée
 
