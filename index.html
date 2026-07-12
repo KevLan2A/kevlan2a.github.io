@@ -357,11 +357,35 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--caramel-
 textarea{resize:vertical;min-height:120px}
 select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a5f2e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
 .form-note{font-size:.82rem;color:var(--muted)}
-.form-success{
-  display:none;background:var(--pine);border:1.5px solid var(--caramel);border-radius:10px;
-  padding:15px 18px;font-size:.92rem;color:var(--caramel-deep);font-weight:500;
+/* ---------- NOTIFICATION TOAST (confirmation d'envoi du devis) ---------- */
+.toast{
+  position:fixed;z-index:200;right:22px;bottom:22px;max-width:min(400px,calc(100vw - 34px));
+  background:#fffdf8;border:1.5px solid var(--caramel);border-radius:16px;
+  box-shadow:0 22px 50px rgba(51,37,26,.28);
+  padding:18px 44px 18px 18px;display:flex;gap:14px;align-items:flex-start;
+  transform:translateY(24px) scale(.96);opacity:0;pointer-events:none;
+  transition:transform .45s cubic-bezier(.34,1.4,.64,1), opacity .35s;
 }
-.form-success.show{display:block;animation:fadeUp .5s var(--ease)}
+.toast.show{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}
+.toast .ico{
+  flex:0 0 42px;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  background:var(--pine);font-size:1.3rem;
+}
+.toast.erreur .ico{background:#f3ded6}
+.toast b{font-family:"Fraunces",serif;font-size:1.02rem;color:var(--ink);display:block;margin-bottom:3px}
+.toast p{color:var(--ink-soft);font-size:.88rem;line-height:1.5;margin:0}
+.toast .fermer{
+  position:absolute;top:8px;right:10px;background:none;border:none;cursor:pointer;
+  color:var(--muted);font-size:1.15rem;line-height:1;padding:4px;
+}
+.toast .barre{
+  position:absolute;left:16px;right:16px;bottom:0;height:3px;border-radius:3px 3px 0 0;
+  background:var(--caramel);transform-origin:left;animation:toastBarre 7s linear forwards;
+}
+.toast.erreur .barre{animation:none;background:#c2703d}
+@keyframes toastBarre{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media (max-width:600px){.toast{right:16px;left:16px;bottom:16px}}
+@media (prefers-reduced-motion:reduce){.toast{transition:opacity .2s}.toast .barre{animation:none}}
 
 /* ---------- FOOTER ---------- */
 footer{
@@ -709,11 +733,18 @@ footer{
       <span>Je souhaite recevoir <b>la lettre de l'atelier</b> — une fois par mois, le récap des chantiers et le mot d'Olivier.</span>
       </label>
       <button type="submit" class="btn btn-primary">Envoyer ma demande de devis</button>
-      <div class="form-success" id="formSuccess">✓ Votre messagerie vient de s'ouvrir avec votre demande. Vérifiez le contenu puis cliquez sur « Envoyer ». Un email de confirmation vient de
-   vous être adressé."</div>
     </form>
   </div>
 </section>
+
+<!-- NOTIFICATION TOAST : confirmation animée après l'envoi du devis
+     (pilotée par la fonction afficherToast() dans les scripts) -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <div class="ico" id="toastIco">✓</div>
+  <div><b id="toastTitre"></b><p id="toastTexte"></p></div>
+  <button class="fermer" aria-label="Fermer la notification" onclick="this.parentElement.classList.remove('show')">×</button>
+  <span class="barre" id="toastBarre"></span>
+</div>
 
 <!-- =============== PIED DE PAGE =============== -->
 <footer>
@@ -845,6 +876,23 @@ const GOOGLE_AVIS = {
 const BREVO_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFAEGfRu1GsRmeljq_DwbKncY95QGDXB6JUjmLILPvy07O4lpgU2Btg5fdKy8dtxQ4eKjNEsgnDnk3kMFfZgVv3V3D204fdusEZAQNtMR5opkGGrtQK95InTh1x5RtD9qnQFhhxvYIgqYZwU89fAIdCHM1oQO7vEs-v6xUFK3bJE4jo63CUihZZxEtB0OFM36Ok8E3tNd8RCDXpw==';
 const BREVO_DEVIS_FORM_URL = 'https://34bd0e6a.sibforms.com/serve/MUIFALcwkwLYZifr8gYf6r01y1dDzqzydT2giH9TZJMq1hr_zZwS1jhq_3z3g5Xf0nJNWXgmJxz8Qpc2sHQrQVoxUfYmHoNmly9MZ6hQvEs9_X5ETT1RyGoO9-uEK5tt6k070D5eL3PkZDhWmUVevWaBuD4fqto-_s1sy7-FwZmonUnC8hEEqLrAkYtdnSwyrYmdPxHl6EBw-MWAyQ==';
 const WEB3FORMS_KEY = 'd6facab8-5499-43bf-9b25-87f0fdd2027d';
+
+/* Affiche la notification toast (succès ou erreur), auto-fermée après 7 s */
+function afficherToast(titre, texte, erreur = false) {
+  const t = document.getElementById('toast');
+  t.classList.toggle('erreur', erreur);
+  document.getElementById('toastIco').textContent = erreur ? '✕' : '✓';
+  document.getElementById('toastTitre').textContent = titre;
+  document.getElementById('toastTexte').textContent = texte;
+  // relancer la barre de progression
+  const barre = document.getElementById('toastBarre');
+  barre.style.animation = 'none'; void barre.offsetWidth;
+  barre.style.animation = '';
+  t.classList.remove('show'); void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(t._minuteur);
+  t._minuteur = setTimeout(() => t.classList.remove('show'), 7000);
+}
 const chargementForm = Date.now();   // anti-bot : horodatage d'arrivée
 
 document.getElementById('devisForm').addEventListener('submit', async e => {
@@ -894,11 +942,16 @@ document.getElementById('devisForm').addEventListener('submit', async e => {
     const res = await r.json();
     if (!res.success) throw new Error(res.message);
     f.reset();
-    const ok = document.getElementById('formSuccess');
-    ok.textContent = '✓ Votre demande est envoyée ! Vous allez recevoir un email de confirmation, et Olivier vous répondra sous 48 h ouvrées.';
-    ok.classList.add('show');
+    afficherToast(
+      'Demande envoyée !',
+      'Un email de confirmation arrive dans votre boîte. Olivier vous répondra sous 48 h ouvrées.'
+    );
   } catch (err) {
-    alert("L'envoi a échoué — vous pouvez appeler directement le 06 01 90 14 90 ou écrire à contact@olivierlouette.com");
+    afficherToast(
+      "L'envoi a échoué",
+      'Appelez directement le 06 01 90 14 90 ou écrivez à contact@olivierlouette.com',
+      true
+    );
   } finally {
     btn.disabled = false; btn.textContent = txt;
   }
